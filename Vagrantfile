@@ -3,33 +3,34 @@
 
 # https://docs.vagrantup.com.
 Vagrant.configure("2") do |config|
+
+  config.vm.box_check_update = false
  
   config.vm.define "eve" do |eve|
     eve.vm.hostname = "eve.local"
-    eve.vm.box = "generic/alpine38"
+    eve.vm.box = "generic/ubuntu2004"
 
     eve.vm.network "private_network", type: "static", ip: "10.10.10.2",
       virtualbox__intnet: true, netmask: "255.255.255.0"
 
     eve.vm.provider "virtualbox" do |v|
-      v.gui = true
+      v.gui = false
       v.name = "Eve"
       v.memory = "2048"
       v.cpus = 2
       v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
     end
 
-    # config.vm.provision "shell", inline: <<-SHELL
-    #   apt-get update
-    #   apt-get install -y apache2
-    # SHELL
+    config.vm.provision "shell", inline: <<-SHELL
+      echo "10.10.10.3  alice" >> /etc/hosts
+    SHELL
 
   end
 
   config.vm.define "alice" do |alice|
 
     alice.vm.hostname = "alice.local"
-    alice.vm.box = "generic/alpine38"
+    alice.vm.box = "generic/ubuntu2004"
 
     alice.vm.network "private_network", type: "static", 
       virtualbox__intnet: true, ip: "10.10.10.3", 
@@ -42,15 +43,20 @@ Vagrant.configure("2") do |config|
     alice.vm.provider "virtualbox" do |v|
       v.gui = false
       v.name = "Alice"
-      v.memory = "256"
+      v.memory = "512"
       v.cpus = 1
     end
+    
+    config.vm.provision "shell", inline: <<-SHELL
+      echo "10.10.10.2  eve" >> /etc/hosts
+      echo "192.168.0.3  bob" >> /etc/hosts
+    SHELL
 
   end
 
   config.vm.define "bob" do |bob|
     bob.vm.hostname = "bob.local"
-    bob.vm.box = "generic/alpine38"
+    bob.vm.box = "generic/ubuntu2004"
 
     bob.vm.network "private_network", type: "static",
       virtualbox__intnet: true, ip: "192.168.0.3", 
@@ -59,12 +65,14 @@ Vagrant.configure("2") do |config|
     bob.vm.provider "virtualbox" do |v|
       v.gui = false
       v.name = "Bob"
-      v.memory = "256"
+      v.memory = "512"
       v.cpus = 1
     end
-  end
 
-  # config.vm.box_check_update = false
+    config.vm.provision "shell", inline: <<-SHELL
+      echo "192.168.0.2  alice" >> /etc/hosts
+    SHELL
+  end
 
   # NOTE: This will enable public access to the opened port
   # config.vm.network "forwarded_port", guest: 80, host: 8080

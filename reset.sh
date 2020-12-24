@@ -21,3 +21,4 @@ if [ ! -z $halt ]
 fi
 
 (vagrant destroy $1 -f; vagrant up $1) | tee logs/reset.log
+exit 0
