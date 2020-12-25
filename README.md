@@ -1,15 +1,22 @@
 # Sandbox
 
-My first objective is to create a simple network of three hosts
-connected to each other. Only the first host should have internet
-access. Two other hosts shouldn't have vagrant's 10.0.2.15 interface,
-user or anything else. Configure it's connection through root and 
-ssh conf files.
+A simple sandbox to play around.
+
+Alice isn't connected to internet and has enabled routing.
+Bob and Alice have http servers runnig accessible from localhost.
+Each host can ssh to any other host with public key.
+Also they all share a shared folder with host.
 
 ```  
-|-----|               |-----|                |-----|
-|     |               |     |                |     |
-|  1  | 10.10.10.0/24 |  2  | 192.168.0.0/24 |  3  |
-|     | < --------- > |     | < ---------- > |     |
-|-----|               |-----|                |-----|
+|-----|               |-------|                |-----|
+|     |               |       |                |     |
+| eve | 10.10.10.0/24 | alice | 192.168.0.0/24 | bob |
+|     | < --------- > |       | < ---------- > |     |
+|-----|               |-------|                |-----|
 ```
+
+## Goals:
+
+1. Move to ansible (I wanted to try shell. hell no)
+2. Create a playbook for packet and flow capture on Alice
+3. Add a windows host

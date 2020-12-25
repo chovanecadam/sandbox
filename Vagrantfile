@@ -5,6 +5,12 @@
 Vagrant.configure("2") do |config|
 
   config.vm.box_check_update = false
+
+  config.vm.provider "virtualbox" do |v|
+    v.check_guest_additions = false
+  end
+
+  config.vm.synced_folder "shared", "/s", create: true, automount: true
  
   config.vm.define "eve" do |eve|
     eve.vm.hostname = "eve.local"
@@ -21,14 +27,20 @@ Vagrant.configure("2") do |config|
       v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
     end
 
-    config.vm.provision "shell", inline: <<-SHELL
-      echo "10.10.10.3  alice" >> /etc/hosts
-    SHELL
+    eve.vm.provision "base-provision", type: "shell",
+      path: "./provision/shell/base-provision/eve.sh",
+      name: "base-provision"
+
+    eve.vm.provision "interconnect", type: "shell", 
+      path: "./provision/shell/interconnect/eve.sh", 
+      name: "interconnect"
+
+    eve.vm.provision "file", source: "./files/eve",
+      destination: "~/.ssh/id_rsa"
 
   end
 
   config.vm.define "alice" do |alice|
-
     alice.vm.hostname = "alice.local"
     alice.vm.box = "generic/ubuntu2004"
 
@@ -47,11 +59,16 @@ Vagrant.configure("2") do |config|
       v.cpus = 1
     end
     
-    config.vm.provision "shell", inline: <<-SHELL
-      echo "10.10.10.2  eve" >> /etc/hosts
-      echo "192.168.0.3  bob" >> /etc/hosts
-    SHELL
+    alice.vm.provision "base-provision", type: "shell",
+      path: "./provision/shell/base-provision/alice.sh",
+      name: "base-provision"
 
+    alice.vm.provision "interconnect", type: "shell", 
+      path: "./provision/shell/interconnect/alice.sh", 
+      name: "interconnect"
+
+    alice.vm.provision "file", source: "./files/alice",
+      destination: "~/.ssh/id_rsa"
   end
 
   config.vm.define "bob" do |bob|
@@ -69,15 +86,27 @@ Vagrant.configure("2") do |config|
       v.cpus = 1
     end
 
-    config.vm.provision "shell", inline: <<-SHELL
-      echo "192.168.0.2  alice" >> /etc/hosts
-    SHELL
+    bob.vm.provision "base-provision", type: "shell",
+      path: "./provision/shell/base-provision/bob.sh",
+      name: "base-provision"
+      
+    bob.vm.provision "interconnect", type: "shell", 
+      path: "./provision/shell/interconnect/bob.sh", 
+      name: "interconnect"
+
+    bob.vm.provision "file", source: "./files/bob",
+      destination: "~/.ssh/id_rsa"
   end
 
-  # NOTE: This will enable public access to the opened port
-  # config.vm.network "forwarded_port", guest: 80, host: 8080
+  # this requires enviroment variable VAGRANT_EXPERIMENTAL
+  # export VAGRANT_EXPERIMENTAL="dependency_provisioners"
+  config.vm.provision "interconnect-known-hosts", type: "shell",
+    path: "./provision/shell/base-provision/common.sh",
+    name: "interconnect-known-hosts",
+    privileged: false, after: :all
 
-  # config.vm.synced_folder "<host folder>", "<guest folder>"
-  # config.vm.synced_folder "../data", "/vagrant_data"
+  # this replaces vagrant's key, which isn't nice
+  config.vm.provision "file", source: "./files/authorized_keys",
+    destination: "~/.ssh/authorized_keys"
 
 end
