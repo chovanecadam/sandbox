@@ -1,0 +1,92 @@
+---
+
+- name: common basic provision
+  hosts: all
+  become: yes
+  tasks:
+
+    - name: update /etc/hosts file
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          {{ item.ip }} {{ item.name }}
+        marker: ""
+      loop:
+        - { ip: 10.10.10.2,  name: eve   }
+        - { ip: 10.10.10.3,  name: alice }
+        - { ip: 192.168.0.2, name: alice }
+        - { ip: 192.168.0.3, name: bob   }
+
+    - name: python symlink to python3
+      file:
+        path: /usr/bin/python
+        src: /usr/bin/python3
+        state: link
+
+- name: basic provision of host eve
+  hosts: eve
+  gather_facts: yes
+  become: yes
+  tasks:
+
+    - name: install nmap
+      apt:
+        update_cache: yes
+        name: nmap
+        state: present
+
+    - name: add route to bob
+      command: "ip route add 192.168.0.0/24 via 10.10.10.3"
+
+- name: basic provision of server hosts
+  hosts: alice, eve
+  gather_facts: yes
+  become: yes
+  tasks:
+
+    - name:
+      file:
+        path: /srv/http
+        state: directory
+
+    - name: start python server
+      shell: 
+        cmd: "python -m http.server --bind 127.0.0.1 --directory /srv/http 80 </dev/null >/dev/null 2>&1 &"
+
+    - name: disconnect from the internet
+      command: "ip route del default"
+
+- name: basic provision of host alice
+  hosts: alice
+  gather_facts: yes
+  become: yes
+  tasks:
+    
+    - name: index.html
+      lineinfile:
+        path: /srv/http/index.html
+        line: "Website reachable only from Alice's localhost"
+        create: yes
+
+    - name: enable routing on alice
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        sysctl_set: yes
+
+- name: basic provision of host bob
+  hosts: bob
+  gather_facts: yes
+  become: yes
+  tasks:
+    
+    - name: index.html
+      lineinfile:
+        path: /srv/http/index.html
+        line: "Website reachable only from Bob's localhost"
+        create: yes
+
+    - name: add route to eve
+      command: "ip route add 10.10.10.0/24 via 192.168.0.2"
+
+...

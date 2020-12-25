@@ -2,7 +2,7 @@
 
 A simple sandbox to play around.
 
-Alice isn't connected to internet and has enabled routing.
+Alice and Bob aren't connected to internet. Alice has enabled routing.
 Bob and Alice have http servers runnig accessible from localhost.
 Each host can ssh to any other host with public key.
 Also they all share a shared folder with host.

@@ -109,4 +109,8 @@ Vagrant.configure("2") do |config|
   config.vm.provision "file", source: "./files/authorized_keys",
     destination: "~/.ssh/authorized_keys"
 
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "provision/ansible/playbook.yml"
+  end
+
 end

@@ -1,0 +1,2 @@
+# required for sysctl.conf edits
+- name: ansible.posix
