@@ -15,6 +15,16 @@ Also they all share a shared folder with host.
 |-----|               |-------|                |-----|
 ```
 
+## Setup
+
+```
+ansible-galaxy collection install ansible.posix
+ssh-keygen -C alice -f ./files/alice -q
+ssh-keygen -C bob -f ./files/bob -q
+ssh-keygen -C eve -f ./files/eve -q
+(cd files && cat alice.pub bob.pub eve.pub > authorized_keys)
+```
+
 ## Goals:
 
 1. Move to ansible (I wanted to try shell. hell no)
