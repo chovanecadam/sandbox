@@ -7,6 +7,9 @@
         path: /srv/http/index.html
         line: "Website reachable only from Bob's localhost"
         create: yes
+        owner: vagrant
+        group: vagrant
+      tags: http-server
 
     - name: add route to eve
       command: "ip route add 10.10.10.0/24 via 192.168.0.2"

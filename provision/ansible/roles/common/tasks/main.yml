@@ -34,6 +34,7 @@
 
     - name: run setup.sh 
       shell: "cd /opt/dotfiles && sudo bash /opt/dotfiles/setup.sh {{ inventory_hostname }}"
+      tags: dotfiles
 
     # - name: fetch ssh key from guest to host
     #   fetch:
@@ -48,10 +49,14 @@
       file:
         path: /srv/http
         state: directory
+        owner: vagrant
+        group: vagrant
+      tags: http-server
 
     - name: start python server
       shell: 
-        cmd: "python -m http.server --bind 127.0.0.1 --directory /srv/http 80 </dev/null >/dev/null 2>&1 &"
+        cmd: "nohup python -m http.server --bind 127.0.0.1 --directory /srv/http 80 </dev/null >/dev/null 2>&1 &"
+      tags: http-server
 
     - name: disconnect from the internet
       command: "ip route del default"

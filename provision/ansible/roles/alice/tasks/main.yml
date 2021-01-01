@@ -7,6 +7,9 @@
         path: /srv/http/index.html
         line: "Website reachable only from Alice's localhost"
         create: yes
+        owner: vagrant
+        group: vagrant
+      tags: http-server
 
     - name: enable routing on alice
       ansible.posix.sysctl:
