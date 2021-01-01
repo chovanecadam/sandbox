@@ -1,0 +1,20 @@
+Host eve alice bob
+  HostName 127.0.0.1
+  User vagrant
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentitiesOnly yes
+  LogLevel FATAL
+
+Host eve
+  Port 2200
+  IdentityFile ./.vagrant/machines/eve/virtualbox/private_key
+
+Host alice
+  Port 2201
+  IdentityFile ./.vagrant/machines/alice/virtualbox/private_key
+
+Host bob
+  Port 2202
+  IdentityFile ./.vagrant/machines/bob/virtualbox/private_key

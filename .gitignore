@@ -2,4 +2,5 @@ logs
 .vagrant
 .git
 shared
-files/ssh/
+provision/ansible/files/ssh/
+local

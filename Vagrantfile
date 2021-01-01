@@ -11,6 +11,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.synced_folder "shared", "/s", create: true, automount: true
+  config.ssh.config = "./ssh_config"
  
   config.vm.define "eve" do |eve|
     eve.vm.hostname = "eve.local"
@@ -19,6 +20,9 @@ Vagrant.configure("2") do |config|
     eve.vm.network "private_network", type: "static", ip: "10.10.10.2",
       virtualbox__intnet: true, netmask: "255.255.255.0"
 
+    eve.vm.network "forwarded_port", guest: 22, host: 2200,
+      host_ip: "127.0.0.1", id: "ssh"
+
     eve.vm.provider "virtualbox" do |v|
       v.gui = false
       v.name = "Eve"
@@ -26,17 +30,6 @@ Vagrant.configure("2") do |config|
       v.cpus = 2
       v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
     end
-
-    eve.vm.provision "base-provision", type: "shell",
-      path: "./provision/shell/base-provision/eve.sh",
-      name: "base-provision"
-
-    eve.vm.provision "interconnect", type: "shell", 
-      path: "./provision/shell/interconnect/eve.sh", 
-      name: "interconnect"
-
-    eve.vm.provision "file", source: "./files/eve",
-      destination: "~/.ssh/id_rsa"
 
   end
 
@@ -52,6 +45,9 @@ Vagrant.configure("2") do |config|
       virtualbox__intnet: true, ip: "192.168.0.2", 
       netmask: "255.255.255.0"
 
+    alice.vm.network "forwarded_port", guest: 22, host: 2201, 
+      host_ip: "127.0.0.1", id: "ssh"
+
     alice.vm.provider "virtualbox" do |v|
       v.gui = false
       v.name = "Alice"
@@ -59,16 +55,6 @@ Vagrant.configure("2") do |config|
       v.cpus = 1
     end
     
-    alice.vm.provision "base-provision", type: "shell",
-      path: "./provision/shell/base-provision/alice.sh",
-      name: "base-provision"
-
-    alice.vm.provision "interconnect", type: "shell", 
-      path: "./provision/shell/interconnect/alice.sh", 
-      name: "interconnect"
-
-    alice.vm.provision "file", source: "./files/alice",
-      destination: "~/.ssh/id_rsa"
   end
 
   config.vm.define "bob" do |bob|
@@ -79,6 +65,9 @@ Vagrant.configure("2") do |config|
       virtualbox__intnet: true, ip: "192.168.0.3", 
       netmask: "255.255.255.0"
 
+    bob.vm.network "forwarded_port", guest: 22, host: 2202, 
+      host_ip: "127.0.0.1", id: "ssh"
+
     bob.vm.provider "virtualbox" do |v|
       v.gui = false
       v.name = "Bob"
@@ -86,31 +75,6 @@ Vagrant.configure("2") do |config|
       v.cpus = 1
     end
 
-    bob.vm.provision "base-provision", type: "shell",
-      path: "./provision/shell/base-provision/bob.sh",
-      name: "base-provision"
-      
-    bob.vm.provision "interconnect", type: "shell", 
-      path: "./provision/shell/interconnect/bob.sh", 
-      name: "interconnect"
-
-    bob.vm.provision "file", source: "./files/bob",
-      destination: "~/.ssh/id_rsa"
-  end
-
-  # this requires enviroment variable VAGRANT_EXPERIMENTAL
-  # export VAGRANT_EXPERIMENTAL="dependency_provisioners"
-  config.vm.provision "interconnect-known-hosts", type: "shell",
-    path: "./provision/shell/base-provision/common.sh",
-    name: "interconnect-known-hosts",
-    privileged: false, after: :all
-
-  # this replaces vagrant's key, which isn't nice
-  config.vm.provision "file", source: "./files/authorized_keys",
-    destination: "~/.ssh/authorized_keys"
-
-  config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "provision/ansible/playbook.yml"
   end
 
 end

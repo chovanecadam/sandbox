@@ -1,0 +1,26 @@
+---
+all:
+
+  vars:
+
+    ansible_host: 127.0.0.1
+    ansible_user: 'vagrant'
+
+  hosts:
+
+    eve:
+      ansible_port: 2200
+      ansible_ssh_private_key_file: ./.vagrant/machines/eve/virtualbox/private_key
+
+    alice:
+      ansible_port: 2201
+      ansible_ssh_private_key_file: ./.vagrant/machines/alice/virtualbox/private_key
+
+    bob:
+      ansible_port: 2202
+      ansible_ssh_private_key_file: ./.vagrant/machines/bob/virtualbox/private_key
+    
+  
+
+
+...

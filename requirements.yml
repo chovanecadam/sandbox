@@ -1,2 +1,7 @@
-# required for sysctl.conf edits
-- name: ansible.posix
+---
+collections:
+
+  # required for sysctl.conf edits
+  - name: ansible.posix
+
+...

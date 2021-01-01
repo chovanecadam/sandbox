@@ -1,90 +1,62 @@
 ---
 
-- name: common basic provision
+# create virtual enviroment for ansible, so python packages on which
+# ansible needs can be installed, but don't mess up rest of the system.
+# from https://medium.com/@crobin
+
+- name: Install Ansible dependencies
   hosts: all
-  become: yes
+  become: true
+  vars:
+    # add here if necessary
+    ansible_dependencies:
+      - pip
   tasks:
 
-    - name: update /etc/hosts file
-      lineinfile:
-        path: /etc/hosts
-        line: {{ item.ip }} {{ item.name }}
-      with_items:
-        - { ip: 10.10.10.2,  name: eve   }
-        - { ip: 10.10.10.3,  name: alice }
-        - { ip: 192.168.0.2, name: alice }
-        - { ip: 192.168.0.3, name: bob   }
+    - name: Create deployment folder
+      file: 
+        path: /opt/ansible-deploy
+        state: directory 
+        mode: 0755
 
-    - name: python symlink to python3
-      file:
-        path: /usr/bin/python
-        src: /usr/bin/python3
-        state: link
-
-- name: basic provision of host eve
-  hosts: eve
-  gather_facts: yes
-  become: yes
-  tasks:
-
-    - name: install nmap
-      apt:
-        update_cache: yes
-        name: nmap
+    - name: Install ansible dependencies
+      package:
+        name:
+          - python3-apt
+          - python3-pip
+          - python3-virtualenv
+          - python3-setuptools
         state: present
 
-    - name: add route to bob
-      command: "ip route add 192.168.0.0/24 via 10.10.10.3"
+    - name: Install python libraries
+      pip:
+        name: "{{ item }}"
+        state: latest
+        virtualenv: /opt/ansible-deploy
+        virtualenv_site_packages: yes
+      loop: "{{ ansible_dependencies }}"
 
-- name: basic provision of server hosts
-  hosts: alice, eve
-  gather_facts: yes
-  become: yes
-  tasks:
+    - name: Tell subsequent tasks to use our deploy virtualenv
+      set_fact:
+        ansible_python_interpreter: /opt/ansible-deploy/bin/python
 
-    - name:
-      file:
-        path: /srv/http
-        state: directory
+- name: common basic provision
+  hosts: all
+  roles:
+    - common
 
-    - name: start python server
-      shell: 
-        cmd: "python -m http.server --bind 127.0.0.1 --directory /srv/http 80 </dev/null >/dev/null 2>&1 &"
-
-    - name: disconnect from the internet
-      command: "ip route del default"
-
-- name: basic provision of host alice
+- name: provision of eve
+  hosts: eve
+  roles:
+    - eve
+    
+- name: provision of alice
   hosts: alice
-  gather_facts: yes
-  become: yes
-  tasks:
-    
-    - name: index.html
-      lineinfile:
-        path: /srv/http/index.html
-        line: "Website reachable only from Alice's localhost"
-        create: yes
+  roles:
+    - alice
 
-    - name: enable routing on alice
-      ansible.posix.sysctl:
-        name: net.ipv4.ip_forward
-        value: '1'
-        sysctl_set: yes
-
-- name: basic provision of host bob
+- name: povision of bob
   hosts: bob
-  gather_facts: yes
-  become: yes
-  tasks:
-    
-    - name: index.html
-      lineinfile:
-        path: /srv/http/index.html
-        line: "Website reachable only from Bob's localhost"
-        create: yes
-
-    - name: add route to eve
-      command: "ip route add 10.10.10.0/24 via 192.168.0.2"
-
+  roles:
+    - bob
 ...

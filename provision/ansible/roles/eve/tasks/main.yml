@@ -1,0 +1,12 @@
+---
+- block:
+    - name: install nmap
+      apt:
+        update_cache: yes
+        name: nmap
+        state: present
+
+    - name: add route to bob
+      command: "ip route add 192.168.0.0/24 via 10.10.10.3"
+  become: yes
+...

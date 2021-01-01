@@ -1,0 +1,61 @@
+---
+
+- block:
+
+    - name: update /etc/hosts file
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item.ip }} {{ item.name }}"
+      loop:
+        - { ip: 10.10.10.2,  name: eve   }
+        - { ip: 10.10.10.3,  name: alice }
+        - { ip: 192.168.0.2, name: alice }
+        - { ip: 192.168.0.3, name: bob   }
+
+    - name: python symlink to python3
+      file:
+        path: /usr/bin/python
+        src: /usr/bin/python3
+        state: link
+
+    - name: create user
+      user:
+        name: "{{ inventory_hostname }}"
+        generate_ssh_key: yes
+        force: yes
+        shell: /bin/bash
+        groups: sudo
+        password: ""
+
+    - name: clone my git dotfiles repo
+      git:
+        repo: http://github.com/chovanecadam/dotfiles.git
+        dest: /opt/dotfiles
+
+    - name: run setup.sh 
+      shell: "cd /opt/dotfiles && sudo bash /opt/dotfiles/setup.sh {{ inventory_hostname }}"
+
+    # - name: fetch ssh key from guest to host
+    #   fetch:
+    #     src: # TODO
+
+  become: yes
+
+# block only for Alice and Bob
+
+- block:
+    - name: create http directory
+      file:
+        path: /srv/http
+        state: directory
+
+    - name: start python server
+      shell: 
+        cmd: "python -m http.server --bind 127.0.0.1 --directory /srv/http 80 </dev/null >/dev/null 2>&1 &"
+
+    - name: disconnect from the internet
+      command: "ip route del default"
+
+  become: yes
+  when: inventory_hostname == "alice" or inventory_hostname == "bob"
+...
