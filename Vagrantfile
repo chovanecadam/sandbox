@@ -17,8 +17,8 @@ Vagrant.configure("2") do |config|
     eve.vm.hostname = "eve.local"
     eve.vm.box = "generic/ubuntu2004"
 
-    eve.vm.network "private_network", type: "static", ip: "10.10.10.2",
-      virtualbox__intnet: true, netmask: "255.255.255.0"
+    eve.vm.network "private_network", virtualbox__intnet: true, 
+      auto_config: false
 
     eve.vm.network "forwarded_port", guest: 22, host: 2200,
       host_ip: "127.0.0.1", id: "ssh"
@@ -37,13 +37,11 @@ Vagrant.configure("2") do |config|
     alice.vm.hostname = "alice.local"
     alice.vm.box = "generic/ubuntu2004"
 
-    alice.vm.network "private_network", type: "static", 
-      virtualbox__intnet: true, ip: "10.10.10.3", 
-      netmask: "255.255.255.0"
+    alice.vm.network "private_network", virtualbox__intnet: true, 
+      auto_config: false
 
-    alice.vm.network "private_network", type: "static",
-      virtualbox__intnet: true, ip: "192.168.0.2", 
-      netmask: "255.255.255.0"
+    alice.vm.network "private_network", virtualbox__intnet: true, 
+      auto_config: false
 
     alice.vm.network "forwarded_port", guest: 22, host: 2201, 
       host_ip: "127.0.0.1", id: "ssh"
@@ -61,9 +59,8 @@ Vagrant.configure("2") do |config|
     bob.vm.hostname = "bob.local"
     bob.vm.box = "generic/ubuntu2004"
 
-    bob.vm.network "private_network", type: "static",
-      virtualbox__intnet: true, ip: "192.168.0.3", 
-      netmask: "255.255.255.0"
+    bob.vm.network "private_network",
+      virtualbox__intnet: true, auto_config: false
 
     bob.vm.network "forwarded_port", guest: 22, host: 2202, 
       host_ip: "127.0.0.1", id: "ssh"

@@ -12,6 +12,16 @@
         - { ip: 192.168.0.2, name: alice }
         - { ip: 192.168.0.3, name: bob   }
 
+    - name: configure network interfaces
+      copy:
+        src: "netplan/50-ansible.yaml.{{ inventory_hostname }}"
+        dest: /etc/netplan/50-ansible.yaml
+
+    - name: bring up network interfaces
+      shell: "netplan apply"
+
+    # - name: check that network 
+
     - name: python symlink to python3
       file:
         path: /usr/bin/python
