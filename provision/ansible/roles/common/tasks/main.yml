@@ -20,8 +20,6 @@
     - name: bring up network interfaces
       shell: "netplan apply"
 
-    # - name: check that network 
-
     - name: python symlink to python3
       file:
         path: /usr/bin/python
@@ -31,29 +29,42 @@
     - name: create user
       user:
         name: "{{ inventory_hostname }}"
-        generate_ssh_key: yes
-        force: yes
         shell: /bin/bash
         groups: sudo
-        password: ""
+        password: "{{ 'password' | password_hash('sha512') }}"
+      tags: user
 
     - name: clone my git dotfiles repo
       git:
         repo: http://github.com/chovanecadam/dotfiles.git
         dest: /opt/dotfiles
 
-    - name: run setup.sh 
-      shell: "cd /opt/dotfiles && sudo bash /opt/dotfiles/setup.sh {{ inventory_hostname }}"
+    - name: run setup.sh for "{{ inventory_hostname }}" 
+      shell: "cd /opt/dotfiles && sudo bash /opt/dotfiles/setup.sh {{ inventory_hostname }} -q"
       tags: dotfiles
 
-    # - name: fetch ssh key from guest to host
-    #   fetch:
-    #     src: # TODO
+    - name: run setup.sh for root
+      shell: "cd /opt/dotfiles && sudo bash /opt/dotfiles/setup.sh root -q"
+      tags: dotfiles
+
+    - name: add authorized key
+      ansible.posix.authorized_key:
+        user: "{{ inventory_hostname }}"
+        key: "{{ lookup('file', '~/.ssh/sandbox.pub') }}"
+      tags: ssh
+
+    - name: copy private key
+      copy:
+        src: ~/.ssh/sandbox
+        dest: "/home/{{ inventory_hostname }}/.ssh/id_rsa"
+        owner: "{{ inventory_hostname }}"
+        group: "{{ inventory_hostname }}"
+        mode: 0600
+      tags: ssh
 
   become: yes
 
 # block only for Alice and Bob
-
 - block:
     - name: create http directory
       file:

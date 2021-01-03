@@ -7,8 +7,8 @@
 - name: Install Ansible dependencies
   hosts: all
   become: true
+  tags: ansible-setup
   vars:
-    # add here if necessary
     ansible_dependencies:
       - pip
   tasks:
@@ -40,23 +40,39 @@
       set_fact:
         ansible_python_interpreter: /opt/ansible-deploy/bin/python
 
+- name: generate ssh key
+  hosts: 127.0.0.1
+  connection: local
+  run_once: true
+  tasks:
+    - name: generate ssh key pair
+      community.crypto.openssh_keypair:
+        path: ~/.ssh/sandbox
+      tags: ssh
+
 - name: common basic provision
   hosts: all
   roles:
     - common
 
-- name: provision of eve
-  hosts: eve
-  roles:
-    - eve
-    
-- name: provision of alice
-  hosts: alice
-  roles:
-    - alice
+# ansible provisiones each host concurrently, but
+# tasks in each role are still played linearly
+- name: provision eve, alice and bob concurrently
+  hosts: all
+  strategy: free
+  tasks:
+  - name: provision eve
+    include_role:
+      name: eve
+    when: inventory_hostname == "eve"
+  - name: provision alice
+    include_role:
+      name: alice
+    when: inventory_hostname == "alice"
+  - name: provision bob
+    include_role:
+      name: bob
+    when: inventory_hostname == "bob"
+  tags: test
 
-- name: povision of bob
-  hosts: bob
-  roles:
-    - bob
 ...
