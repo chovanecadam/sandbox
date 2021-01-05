@@ -27,6 +27,9 @@ ansible-playbook provision/ansible/playbook.yml
 
 1. ssh config for each host, so I can `ssh host` to it, and known-hosts file
 2. Add a windows host
+   - vagrant box OK
+   - update readme
+   - configure networking, ssh keys, etc.
 
 ## Notes
 

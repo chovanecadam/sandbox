@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
   config.ssh.config = "./ssh_config"
  
   config.vm.define "eve" do |eve|
-    eve.vm.hostname = "eve.local"
+    eve.vm.hostname = "eve"
     eve.vm.box = "generic/ubuntu2004"
 
     eve.vm.network "private_network", virtualbox__intnet: true, 
@@ -34,7 +34,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "alice" do |alice|
-    alice.vm.hostname = "alice.local"
+    alice.vm.hostname = "alice"
     alice.vm.box = "generic/ubuntu2004"
 
     alice.vm.network "private_network", virtualbox__intnet: true, 
@@ -56,7 +56,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "bob" do |bob|
-    bob.vm.hostname = "bob.local"
+    bob.vm.hostname = "bob"
     bob.vm.box = "generic/ubuntu2004"
 
     bob.vm.network "private_network",
@@ -70,6 +70,32 @@ Vagrant.configure("2") do |config|
       v.name = "Bob"
       v.memory = "512"
       v.cpus = 1
+    end
+
+  end
+
+  config.vm.define "win" do |win|
+    win.vm.hostname = "windows"
+    win.vm.box = "gusztavvargadr/windows-10"
+
+    win.vm.network "private_network", type: "static", ip: "10.10.10.4",
+      virtualbox__intnet: true, netmask: "255.255.255.0"
+
+    win.vm.network "forwarded_port", guest: 22, host: 2203, 
+      host_ip: "127.0.0.1", id: "ssh"
+
+    win.vm.network "forwarded_port", guest: 5985, host: 55985, 
+      host_ip: "127.0.0.1", id: "winrm"
+
+    win.vm.network "forwarded_port", guest: 5986, host: 55986, 
+      host_ip: "127.0.0.1", id: "winrm-ssl"
+
+    win.vm.network "forwarded_port", guest: 3389, host: 33389, 
+      host_ip: "127.0.0.1", id: "tcp33389"
+
+    win.vm.provider "virtualbox" do |v|
+      v.gui = true
+      v.name = "windows-host"
     end
 
   end
