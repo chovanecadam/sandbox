@@ -2,12 +2,22 @@
 # vi: set ft=ruby :
 
 # https://docs.vagrantup.com.
+
 Vagrant.configure("2") do |config|
 
   config.vm.box_check_update = false
 
   config.vm.provider "virtualbox" do |v|
     v.check_guest_additions = false
+
+    v.customize ["modifyvm", :id, 
+      "--clipboard", "bidirectional"
+    ]
+
+    v.customize ["modifyvm", :id, 
+      "--vram", "64"
+    ]
+
   end
 
   config.vm.synced_folder "shared", "/s", create: true, automount: true
@@ -26,9 +36,13 @@ Vagrant.configure("2") do |config|
     eve.vm.provider "virtualbox" do |v|
       v.gui = false
       v.name = "Eve"
-      v.memory = "2048"
-      v.cpus = 2
-      v.customize ["modifyvm", :id, "--clipboard", "bidirectional"]
+      v.memory = "512"
+      v.cpus = 1
+
+      v.customize ["modifyvm", :id, 
+        "--graphicscontroller", "vmsvga"
+      ]
+
     end
 
   end
@@ -51,6 +65,11 @@ Vagrant.configure("2") do |config|
       v.name = "Alice"
       v.memory = "512"
       v.cpus = 1
+
+      v.customize ["modifyvm", :id, 
+        "--graphicscontroller", "vmsvga"
+      ]
+
     end
     
   end
@@ -70,6 +89,11 @@ Vagrant.configure("2") do |config|
       v.name = "Bob"
       v.memory = "512"
       v.cpus = 1
+
+      v.customize ["modifyvm", :id, 
+        "--graphicscontroller", "vmsvga"
+      ]
+
     end
 
   end
@@ -96,6 +120,19 @@ Vagrant.configure("2") do |config|
     win.vm.provider "virtualbox" do |v|
       v.gui = true
       v.name = "windows-host"
+
+      v.customize [ "storageattach", :id, 
+        "--storagectl", "IDE Controller",
+        "--port", "0",
+        "--device", "1", 
+        "--medium", "/usr/share/virtualbox/VBoxGuestAdditions.iso",
+        "--type", "dvddrive"
+      ]
+
+      v.customize ["modifyvm", :id,
+        "--graphicscontroller", "vboxsvga"
+      ]
+
     end
 
   end
